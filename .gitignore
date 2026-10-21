@@ -21,3 +21,8 @@ Thumbs.db
 # Scratch space
 tmp/
 scratch/
+
+# python
+__pycache__/
+*.pyc
+.pytest_cache/
