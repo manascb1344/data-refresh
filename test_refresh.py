@@ -21,15 +21,15 @@ def read_rows(path: Path) -> list:
 
 
 def test_duplicates_are_dropped_first_occurrence_wins(tmp_path):
-    source = write_csv(tmp_path / "data.csv",
-                       "id,item\n1,apple\n2,pear\n1,apple\n")
+    source = write_csv(tmp_path / "data.csv", "id,item\n1,apple\n2,pear\n1,apple\n")
     main([str(source)])
     assert read_rows(source) == [["id", "item"], ["1", "apple"], ["2", "pear"]]
 
 
 def test_dates_in_date_columns_become_iso(tmp_path):
-    source = write_csv(tmp_path / "data.csv",
-                       "id,order_date,note\n1,25/12/2026,x\n2,12/31/2026,y\n")
+    source = write_csv(
+        tmp_path / "data.csv", "id,order_date,note\n1,25/12/2026,x\n2,12/31/2026,y\n"
+    )
     main([str(source)])
     rows = read_rows(source)
     assert rows[1][1] == "2026-12-25"
@@ -68,8 +68,17 @@ def test_output_writes_a_copy_and_leaves_the_original(tmp_path):
     source = write_csv(tmp_path / "data.csv", "id,item\n9,zeta\n1,alpha\n1,alpha\n")
     out = tmp_path / "out"
     main(["--output", str(out), str(source)])
-    assert read_rows(out / "data.csv") == [["id", "item"], ["1", "alpha"], ["9", "zeta"]]
-    assert read_rows(source) == [["id", "item"], ["9", "zeta"], ["1", "alpha"], ["1", "alpha"]]
+    assert read_rows(out / "data.csv") == [
+        ["id", "item"],
+        ["1", "alpha"],
+        ["9", "zeta"],
+    ]
+    assert read_rows(source) == [
+        ["id", "item"],
+        ["9", "zeta"],
+        ["1", "alpha"],
+        ["1", "alpha"],
+    ]
 
 
 def test_a_directory_is_expanded_to_its_csv_children(tmp_path):
@@ -90,6 +99,7 @@ def test_short_rows_are_padded_to_the_header(tmp_path):
 
 def test_no_files_found_is_an_error(tmp_path):
     import contextlib
+
     buffer = io.StringIO()
     with contextlib.redirect_stderr(buffer):
         code = main([str(tmp_path / "empty")])
@@ -103,7 +113,11 @@ def test_the_date_column_rule():
 
 
 def test_the_date_formats_the_tool_claims(tmp_path):
-    for raw, expected in (("2026-12-25", "2026-12-25"), ("25/12/2026", "2026-12-25"),
-                          ("12/31/2026", "2026-12-31"), ("2026/12/25", "2026-12-25"),
-                          ("25-12-2026", "2026-12-25")):
+    for raw, expected in (
+        ("2026-12-25", "2026-12-25"),
+        ("25/12/2026", "2026-12-25"),
+        ("12/31/2026", "2026-12-31"),
+        ("2026/12/25", "2026-12-25"),
+        ("25-12-2026", "2026-12-25"),
+    ):
         assert normalise_date(raw) == expected, raw

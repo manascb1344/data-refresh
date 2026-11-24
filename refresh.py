@@ -34,7 +34,14 @@ def is_date_column(name: str) -> bool:
 def normalise_date(value: str) -> str:
     """Rewrite a date cell to ISO YYYY-MM-DD; unparseable cells pass through untouched."""
     value = value.strip()
-    for fmt in ("%Y-%m-%d", "%d/%m/%Y", "%m/%d/%Y", "%Y/%m/%d", "%d-%m-%Y", "%Y-%m-%d %H:%M:%S"):
+    for fmt in (
+        "%Y-%m-%d",
+        "%d/%m/%Y",
+        "%m/%d/%Y",
+        "%Y/%m/%d",
+        "%d-%m-%Y",
+        "%Y-%m-%d %H:%M:%S",
+    ):
         try:
             return datetime.strptime(value, fmt).strftime("%Y-%m-%d")
         except ValueError:
@@ -42,7 +49,9 @@ def normalise_date(value: str) -> str:
     return value
 
 
-def normalise_rows(header: list[str], rows: list[list[str]]) -> tuple[list[str], list[list[str]], int]:
+def normalise_rows(
+    header: list[str], rows: list[list[str]]
+) -> tuple[list[str], list[list[str]], int]:
     """Return (header, unique sorted rows, dropped duplicate count)."""
     width = len(header)
     date_columns = [index for index, name in enumerate(header) if is_date_column(name)]
@@ -80,7 +89,7 @@ def normalise_file(path: Path, output: Path | None, check_only: bool) -> str:
     body = buffer.getvalue()
 
     if check_only:
-        return (f"{path}: would drop {dropped} duplicate(s), sort {len(unique)} row(s)")
+        return f"{path}: would drop {dropped} duplicate(s), sort {len(unique)} row(s)"
     target = (output / path.name) if output else path
     target.parent.mkdir(parents=True, exist_ok=True)
     if output is None:
@@ -104,10 +113,16 @@ def collect_csvs(paths: list[Path]) -> list[Path]:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[1])
-    parser.add_argument("paths", nargs="+", type=Path, help="CSV files or directories of them")
+    parser.add_argument(
+        "paths", nargs="+", type=Path, help="CSV files or directories of them"
+    )
     parser.add_argument("--check", action="store_true", help="Report, change nothing")
-    parser.add_argument("--output", type=Path, default=None,
-                        help="Write normalised copies here instead of beside the originals")
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=None,
+        help="Write normalised copies here instead of beside the originals",
+    )
     args = parser.parse_args(argv)
 
     files = collect_csvs(args.paths)
